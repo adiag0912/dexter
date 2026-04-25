@@ -52,7 +52,7 @@ A **named, parametric DAG of actions** that Dexter can run on demand, on schedul
 
 ---
 
-## Example workflows (general, not streaming-specific)
+## Example workflows
 
 | Workflow | Triggered by | Steps |
 |---|---|---|
@@ -84,6 +84,100 @@ Streaming use cases (pre-stream setup, post-stream wrap-up) become *one* categor
 Every action — old or new — registers itself with a typed contract:
 
 ```ts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hi Astemir,I've gone through the context pack and put together two short markdown documents to organise my thinking ahead of our chat. I've pushed them to a public repo so you can take a look beforehand if you'd like:https://github.com/adiag0912/dexterdexter-overview.md — my read of the system: architecture, memory hierarchy, current focus, and the risks I think are worth discussing.feature-workflows.md — a feature proposal (Dexter Workflows — voice-triggered, parametric, cross-app automations) that generalises the existing templates module and reuses every layer you've already built.These are meant as a starting point for the discussion rather than a finished pitch — if you spot anything I've misread about the system, or an angle you'd rather we focused on instead, let me know and I'll adjust before Sunday.Looking forward to it.Best,
+Aditya
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {
   id: 'telegram.post',
   description: 'Post a message to a Telegram channel',
