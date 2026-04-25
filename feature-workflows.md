@@ -195,10 +195,3 @@ workflow_step_results (
 5. **Sharing / marketplace.** Big upside, big trust surface. Defer to v2 minimum, with mandatory scope review on import.
 
 ---
-
-## Why I'd pitch this in the interview
-
-- It demonstrates **judgment about leverage** — picks a horizontal that multiplies existing investments instead of a vertical that adds one more thing to maintain.
-- It connects directly to the team's stated **reliability / execution-truth** focus — the Action Contract is the substrate for both.
-- It opens a clear **phased path** (v0 → v3) that's shippable end-to-end, not a moonshot.
-- It sets up the **proactive copilot** future direction without requiring it on day one.
