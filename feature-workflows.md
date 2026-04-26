@@ -1,32 +1,20 @@
-# Feature Proposal — **Dexter Workflows**
+# Feature Proposal — Dexter Workflows
 
-> Voice-triggered shortcuts that do many things across many apps in one go. A natural next step for Dexter's existing **templates / reusable actions**.
-
----
+This is a proposal for a new feature called Dexter Workflows. It is a way to trigger several actions across several apps with a single voice command. It is a natural next step for Dexter's existing templates and reusable actions.
 
 ## The pitch in one line
 
-> *"Run my morning setup."* *"Send the usual Friday update about the Q2 launch."* *"Save this article for later and remind me Monday."*
->
-> One sentence → many things happen, in many apps, with the right details filled in by the AI.
+Imagine the user says "run my morning setup," or "send the usual Friday update about the Q2 launch," or "save this article for later and remind me Monday." With Workflows, one sentence makes many things happen, across many apps, with the right details filled in by the AI.
 
----
+## Why this feature
 
-## Why this feature, why now
+There are a few reasons this feature makes sense for Dexter right now. It is already on the roadmap, because the context pack mentions general assistant features like notes, scheduling, integrations, and automations across apps, and this is exactly that. It also builds on something users already understand, because templates already exist in Dexter. Workflows are the same idea, just smarter, voice-driven, and able to use more than one app at a time.
 
-| Reason | Detail |
-|---|---|
-| **It's already on the roadmap** | The pack mentions *"general assistant features like notes, scheduling, integrations, and automations across apps."* This is exactly that. |
-| **It builds on something users already understand** | Templates already exist in Dexter. Workflows are the same idea — just smarter, voice-driven, and able to use more than one app at a time. |
-| **It uses everything Dexter has already built** | The brain, the desktop side, the integrations, memory, profiles, stats. It doesn't add a new vertical — it makes everything already built more useful. |
-| **It works for everyone, not just streamers** | Anyone using a computer can benefit. Streaming use cases become one example, not the whole feature. |
-| **It sets up future "Dexter speaks up on its own" features** | Once workflows exist, Dexter can suggest them: "you do this every Monday — want me to make a shortcut?" |
+It also uses everything Dexter has already built. The brain, the desktop side, the integrations, the memory, the profiles, and the stats all get reused. So instead of adding a new vertical, it makes everything already built more useful. Another good reason is that Workflows work for everyone, not just streamers. Anyone using a computer can benefit from them, and streaming use cases simply become one example rather than the whole feature. Finally, it sets up future "Dexter speaks up on its own" features. Once workflows exist as a building block, Dexter can suggest them to the user. For example, "you do this every Monday — want me to make a shortcut?"
 
----
+## What a Workflow actually is
 
-## What a Workflow is
-
-A **named shortcut that runs several steps** — on demand, on a schedule, or when something happens.
+A Workflow is a named shortcut that runs several steps. It can be triggered on demand, on a schedule, or when something happens. The flow looks like this:
 
 ```
                   ┌──────────────┐
@@ -51,38 +39,25 @@ A **named shortcut that runs several steps** — on demand, on a schedule, or wh
                   └──────────────┘
 ```
 
----
+## A few example workflows
 
-## Example workflows
+A morning setup workflow could be triggered by saying "good morning" or by a 9 AM schedule. It would open Slack, the calendar, and email, post a standup message, turn on focus mode, and play a playlist.
 
-| Workflow | Triggered by | What it does |
-|---|---|---|
-| **Morning setup** | "good morning" / 9 AM | open Slack + calendar + email · post a standup message · turn on focus mode · play a playlist |
-| **Save & summarize** | "save this for later" | grab the open browser tab · ask the AI for a summary · store it in your notes · tag it · optionally Telegram it to yourself |
-| **Friday update** | "send the usual Friday update about <X>" | gather this week's notes · let the AI write the message · post to Telegram · log it |
-| **Focus block** | "focus for 90 minutes" | mute notifications · set Slack status · start a timer · play music · undo everything when done |
-| **End of day** | "wrap up" / 6 PM | close apps · post a summary · send open tabs to a reading list · back up your notes |
+A save and summarise workflow could be triggered by "save this for later." It would grab the open browser tab, ask the AI for a summary, store it in the user's notes, tag it, and optionally Telegram it to them.
 
-Streamer-specific shortcuts (pre-stream setup, post-stream wrap-up) become *one kind* of workflow — not the whole feature.
+A Friday update workflow could be triggered by "send the usual Friday update about the Q2 launch." It would gather this week's notes, let the AI write the message, post it to Telegram, and log it.
 
----
+A focus block workflow could be triggered by "focus for 90 minutes." It would mute notifications, set the user's Slack status, start a timer, play music, and undo everything when the time is up.
+
+An end-of-day workflow could be triggered by "wrap up" or by a 6 PM schedule. It would close apps, post a summary, send open tabs to a reading list, and back up the user's notes.
+
+Streamer-specific shortcuts like pre-stream setup or post-stream wrap-up just become one kind of workflow rather than the whole feature.
 
 ## How it fits into Dexter
 
-### Slotting into the existing layers
+Workflows slot neatly into the layers Dexter already has. The voice layer learns to recognise new commands like "run my morning setup" or "make a workflow from what I just did." The desktop app gets a panel showing what is running, how it is going, and any details that still need to be filled in. The server, which is the brain of Dexter, gets a new module that stores workflows, fills in details, runs them, and schedules them. Each existing feature module — like Telegram posting or OBS scene changes — tells the workflow system what it can do and what details it needs. The desktop side just runs steps one after another using the same channel that already exists. And the database gets three new tables: one for workflows, one for runs, and one for step results.
 
-| Existing layer | What Workflows adds |
-|---|---|
-| Voice layer | Recognises new commands like *"run my morning setup"* or *"make a workflow from what I just did"* |
-| Desktop app | A panel showing what's running, how it's going, and prompts for any missing details |
-| Server (the brain) | A new module that stores workflows, fills in details, runs them, and schedules them |
-| Feature modules | Each existing feature (Telegram post, OBS scene change, etc.) tells the workflow system "here's what I can do and what I need to know" |
-| Desktop side | Just runs steps one after another using the same channel that already exists |
-| Database | Three new tables: workflows, workflow runs, and step results |
-
-### The "Action Contract" — the key idea
-
-Every action (old or new) describes itself in a standard way:
+The key idea that holds all of this together is what I am calling the Action Contract. Every action, whether it is old or new, describes itself in a standard way. Roughly, that looks like this in code:
 
 ```ts
 {
@@ -95,41 +70,23 @@ Every action (old or new) describes itself in a standard way:
 }
 ```
 
-This is also exactly what's needed for Dexter's "make sure it really happened" goal — every step has to come back with proof.
+This same shape is exactly what Dexter needs for its goal of making sure things really happened. Every step has to come back with proof, and the contract enforces that.
 
----
+## Tech stack and packages
 
-## Tech stack & packages
+For the foundations, we just reuse what Dexter already has. The server side is TypeScript and Node. The screen is React. The desktop app is Electron. Storage is Supabase and Postgres. The voice layer and the brain that already routes requests are reused as well.
 
-### What we already have and reuse
-- **TypeScript / Node** for the server, **React** for the screen, **Electron** for the desktop app, **Supabase / Postgres** for storage.
-- The voice layer and the brain that already routes requests.
+On top of that, there are a few packages I would add deliberately, not just out of habit. The first is `zod`, which checks that the data going in and out of each step matches what is expected. One short definition gives us live checking, code types, and a description the AI can use to fill in details — three jobs in one tool. The next one is `xstate`, which would track where each running workflow is up to. It makes pausing, resuming, watching, and visualising runs much easier, but we can skip it in the very first version if we want to keep things simple.
 
-### New packages — picked on purpose, not by habit
+For background jobs and scheduling, I would use `bullmq` with Redis. It runs workflows on a schedule or in the background and retries failed steps. It is well-tested, has a dashboard, and saves us writing this part ourselves. It pairs with `ioredis`, which is just the standard connection library. For letting users find a workflow by describing it — like "the one that posts to channels" — `pgvector` is a good choice. It is a free Supabase add-on, so no new servers are needed.
 
-| Package | What it does | Why this one |
-|---|---|---|
-| **`zod`** | Checks that the data going in and out of each step matches what's expected | One short definition gives us live checking, code types, and a description the AI can use to fill in details. Three jobs, one tool. |
-| **`xstate`** | Tracks where each running workflow is up to (waiting, running, paused, done, failed) | Easy to pause, resume, watch, and visualise. *Skip in the first version if we want to keep things simple.* |
-| **`bullmq`** (with Redis) | Runs workflows on a schedule or in the background, retries when things fail | Battle-tested. Has a dashboard. Saves us writing this ourselves. |
-| **`ioredis`** | The connection to Redis that BullMQ needs | Standard pairing — nothing fancy. |
-| **`pgvector`** (Supabase add-on) | Lets users find a workflow by describing it ("the one that posts to channels") | Free with Supabase. No new servers. |
-| **`@anthropic-ai/sdk`** | Talks to Claude for filling in details and writing messages | Going direct keeps things fast. Heavier frameworks add layers we don't need. |
-| **`pino`** | Writes logs in a structured way | Fast, readable, plays nicely with everything else. |
-| **`@opentelemetry/*`** | Lets us trace one user request across the whole system | The only realistic way to debug "why is this slow" or "where did this fail" in a system this spread out. |
-| **`langfuse`** *(optional)* | Records every AI call so we can review and improve them | Worth adding once the AI's quality matters in production. |
-| **`@xyflow/react`** *(later)* | A visual editor for power users to drag steps around | Best-looking, well-supported library for this. |
-| **`electron-store`** | Saves a copy of workflows on the user's machine for quick access and offline drafts | Standard for Electron apps. |
+For talking to Claude, the Anthropic SDK directly is the right call. Going direct keeps things fast, while heavier frameworks add layers we don't really need. For logs, `pino` is fast, readable, and plays nicely with everything else. To trace a single user request across the whole system, OpenTelemetry is more or less the only realistic option in a setup this spread out. Once the AI's quality matters in production, Langfuse becomes worth adding — it records every AI call so we can review and improve them. Later on, when we want a visual editor for power users, `@xyflow/react` is the best-looking and best-supported library for that. And for keeping a copy of workflows on the user's machine for quick access and offline drafts, `electron-store` is the standard choice for Electron apps.
 
-### What we're **not** using (and why)
+There are also a few things I would deliberately not use. LangChain and LangGraph add too much framework around every AI call, and we want fast and direct control. Temporal is great for workflows that run for hours or days, but ours run for seconds, so it is not worth the extra servers. And a new message system like Kafka or NATS would be overkill — Redis and Postgres are enough at this scale, and we should not add servers we cannot justify with a real number.
 
-- **LangChain / LangGraph** — too much framework wrapping every AI call. We want fast, direct control.
-- **Temporal** — designed for workflows that run for hours or days. Ours run for seconds. Not worth the extra servers.
-- **A new message system like Kafka or NATS** — Redis and Postgres are enough for this scale. Don't add servers we can't justify with a real number.
+## What the database tables look like
 
----
-
-## What the database tables look like (rough sketch)
+Here is a rough sketch of the new tables:
 
 ```sql
 workflows (
@@ -165,35 +122,26 @@ workflow_step_results (
 );
 ```
 
----
-
 ## Rolling it out in stages
 
-| Stage | What's in it | Goal |
-|---|---|---|
-| **v0 — Internal** | Update 3–5 existing actions to the new contract; workflows written by hand in JSON; voice trigger only; steps run one after another | Prove the idea works. Use it ourselves. |
-| **v1 — Public release** | A library of starter workflows; "make a workflow from what I just did"; AI fills in details; user sees what worked and what didn't | First version users actually get. |
-| **v2 — Power features** | Visual editor, scheduling, "if this then that" branches, steps in parallel, sharing between users | Make it sticky. |
-| **v3 — Proactive** | Dexter notices you doing the same things repeatedly and offers to turn them into a workflow | Connects to the bigger "Dexter speaks up" direction. |
+I would not try to ship all of this at once. The first stage, v0, is internal only. We update three to five existing actions to use the new contract, write workflows by hand in JSON, allow only voice triggers, and run steps one after another. The goal here is just to prove the idea works and use it ourselves.
 
----
+The second stage, v1, is the first public release. We give users a library of starter workflows, add the "make a workflow from what I just did" feature, let the AI fill in details, and surface what worked and what did not in the UI.
 
-## The judgment calls I'd make
+The third stage, v2, is where we add the power features. That means the visual editor, scheduling, "if this then that" branches, steps running in parallel, and sharing workflows between users. This is what makes the feature sticky.
 
-- **Define workflows as data, not code.** Storing them as JSON makes them easy to share, version, and lock down. Letting users write code is more flexible but a security and maintenance headache. → **Go with data.**
-- **Visual editor in v1?** No. Voice and JSON are enough at first. The visual editor is a v2 feature once people care enough to hand-edit.
-- **Use xstate or write the runner ourselves?** Write it ourselves to start. Switch to xstate when retries, pausing, and branching demand it. Don't pay framework cost before we need it.
-- **AI per step or AI per workflow?** Once per workflow, to fill in the details up front. The AI should not be in the middle of execution — once we know the details, steps run predictably.
-- **Run on the server or on the user's machine?** Step by step — each action says where it should run. Same logic as today, just applied to a sequence.
+The fourth stage, v3, is the proactive one. Dexter notices that the user keeps doing the same things in the same order and offers to turn them into a workflow. This connects directly to the bigger "Dexter speaks up on its own" direction.
 
----
+## The judgment calls I would make
 
-## Risks & open questions
+There are a few decisions that I think matter most. The first is to define workflows as data rather than code. Storing them as JSON makes them easy to share, version, and lock down, while letting users write actual code is more flexible but quickly turns into a security and maintenance headache. So I would go with data.
 
-1. **Trust.** A workflow that misfires is much worse than one wrong click. Need a "show me what would happen first" mode.
-2. **Permissions.** Each workflow says upfront what it can touch (Telegram, OBS, etc.). User approves once when they create it. Can take it back.
-3. **Retrying without doing it twice.** If step 3 of 5 fails and we retry, we can't post to Telegram twice. Each step needs a unique key so we know what's already done.
-4. **Cancelling cleanly.** If the user interrupts mid-workflow, every step needs to know to stop — no stale actions landing 10 seconds later.
-5. **Sharing workflows.** Big upside, big trust risk. Push to v2 minimum, with mandatory permission review when someone imports a workflow.
+The second is whether to build the visual editor in v1, and I would say no. Voice and JSON are enough at first, and the visual editor becomes a v2 feature once people care enough to want to hand-edit. The third is whether to use xstate or write the runner ourselves. I would write it ourselves to start, and switch to xstate later, when retries, pausing, and branching demand it. Don't pay framework cost before we need it.
 
----
+The fourth is about how often we call the AI. I would call it once per workflow, to fill in the details up front. The AI should not be in the middle of execution. Once we know the details, the steps run predictably. The fifth is where workflows actually run — on the server or on the user's machine. The answer is step by step. Each action says where it should run, using the same logic Dexter already uses for single actions.
+
+## Risks and open questions
+
+There are a few risks I would want to talk through. The first is trust. A workflow that misfires is much worse than one wrong click, so we need a "show me what would happen first" mode. The second is permissions. Each workflow should declare upfront what it can touch, like Telegram or OBS, and the user should approve once when they create it and be able to take that approval back later.
+
+The third is making sure retries do not cause damage. If step 3 of 5 fails and we retry, we cannot end up posting to Telegram twice. Each step needs a unique key so we know what is already done. The fourth is cancelling cleanly. If the user interrupts in the middle of a workflow, every step needs to know to stop, so we don't get stale actions landing ten seconds later. The fifth is sharing workflows. There is a lot of upside here, but also a real trust risk, so I would push it to v2 at the earliest, with a mandatory permission review every time someone imports a workflow.
