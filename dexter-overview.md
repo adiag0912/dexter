@@ -1,24 +1,24 @@
 # Dexter — My Read of the System
 
-> A one-page mental model of Dexter as I understood it from the context pack. This is what I'll be reasoning from in the rest of the discussion.
+> A short summary of how I understood Dexter from the context pack. This is what I'll be reasoning from in the rest of the discussion.
 
 ---
 
 ## What Dexter is, in one line
 
-A **desktop AI copilot for streamers** — voice/text in, real-time response, with awareness of what's happening live and the ability to trigger real actions across the streamer's machine, accounts, and integrations.
+A **desktop AI helper for streamers** — you talk or type to it, it answers in real time, it knows what's happening on your stream, and it can actually do things for you across your computer and your accounts.
 
-Not a chatbot. A **co-pilot** — meaning it acts, not just talks.
+Not just a chatbot. A real assistant — it acts, it doesn't just talk.
 
 ---
 
-## The three things that make Dexter interesting (architecturally)
+## Three things that make Dexter interesting
 
 | | Why it matters |
 |---|---|
-| **It spans local + cloud + external systems** | Not "frontend + backend." Electron runtime, backend orchestration, Supabase, OBS, Twitch, Telegram, web, multiple model paths — all coordinated per turn. |
-| **It must act, not just answer** | Execution truth (did the action *actually* happen?) is a first-class concern. Most AI products don't have this problem. |
-| **It learns over time** | Short-term live context, post-stream digestion, long-term streamer + community profiles. A real memory hierarchy, not just a vector DB. (Maybe we can add Obisidan second brain here.) |
+| **It works across your computer, the cloud, and outside services together** | It's not just a website with a backend. It runs on your machine, talks to a server, stores data in a database, and connects to OBS, Twitch, Telegram, and the web — all working together for every single request. |
+| **It has to actually do things, not just answer** | When Dexter says "I muted that user," it really has to have happened. Most AI products only have to talk. Dexter has to *do*, which is much harder to get right. |
+| **It learns over time** | It keeps short notes during the stream, longer notes after the stream, and slowly builds up a picture of the streamer and their community. That layered memory is more useful than dumping everything into one big search. (Maybe we can add Obisidan second brain here.) |
 
 ---
 
@@ -30,112 +30,113 @@ Not a chatbot. A **co-pilot** — meaning it acts, not just talks.
    └───────────────────────────────┬────────────────────────────┘
                                    │
                   ┌────────────────▼────────────────┐
-                  │     Realtime Voice Layer         │  ← live STT / TTS, barge-in
+                  │     Realtime Voice Layer         │  ← listens, speaks back
                   └────────────────┬────────────────┘
                                    │
                   ┌────────────────▼────────────────┐
-                  │   Frontend Runtime (Electron)    │  ← turn handling, coordination
+                  │   Frontend Runtime (Electron)    │  ← the desktop app itself
                   └─────┬───────────────────────┬───┘
                         │                       │
         ┌───────────────▼──────────┐   ┌────────▼───────────────┐
         │  Backend Orchestration   │   │  Local Execution Layer │
-        │  (planning, reasoning)   │   │  (OBS, desktop, files) │
+        │  (the "brain" — decides  │   │  (does things on your  │
+        │   what to do)            │   │   actual computer)     │
         └───────┬──────────────────┘   └────────────────────────┘
                 │
    ┌────────────▼─────────────┐    ┌──────────────────────────┐
-   │   Feature / Domain       │◄──►│   Persistent Data Layer   │
-   │   Modules (moderation,   │    │   (Supabase / Postgres)   │
-   │   giveaways, templates,  │    │   streams, memory,        │
-   │   analytics, etc.)       │    │   profiles, settings      │
+   │   Feature Modules         │◄──►│   Database                │
+   │   (giveaways, moderation, │    │   (Supabase / Postgres)   │
+   │   templates, analytics…)  │    │   stores everything       │
    └──────────┬───────────────┘    └──────────────────────────┘
               │
    ┌──────────▼─────────────────────────────────────────────────┐
-   │   External integrations: Twitch, Telegram, web, music, ... │
+   │   Outside services: Twitch, Telegram, web, music, etc.      │
    └────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Tech foundation
+## The pieces it's built from
 
-- **Electron** desktop app
-- **React** frontend
-- **Node / TypeScript** backend
-- **Supabase / Postgres** persistent store
-- **Multiple model paths** — live interaction, backend reasoning, data digestion (different latency/cost profiles)
-- **External**: mic, OBS, Twitch, Telegram, web tooling
-
----
-
-## How a turn flows (simplified)
-
-1. User speaks or types
-2. Realtime voice layer transcribes and handles interruption
-3. Frontend runtime forwards into backend
-4. Backend decides: conversational? backend-only? local action? fast-path?
-5. Local execution runs anything machine-bound
-6. Backend finalizes
-7. Reply delivered through the live layer
-
-A turn can be: **backend-only**, **backend-decided + locally executed**, **conversational**, or **fast-path deterministic**.
+- **Electron** — turns a web app into a desktop app
+- **React** — the visible part you click and read
+- **Node / TypeScript** — the server-side code
+- **Supabase / Postgres** — where everything is stored
+- **Several different AI models** — a fast one for live conversation, a smarter one for thinking, a cheap one for cleaning up data afterwards
+- **Outside connections** — your microphone, OBS, Twitch, Telegram, and the web
 
 ---
 
-## The memory hierarchy (their real differentiator)
+## What happens when you talk to Dexter
+
+1. You speak or type
+2. The voice layer turns your speech into text and handles you cutting in
+3. The desktop app passes the request to the server
+4. The server figures out: is this a question? a command? something the desktop has to do?
+5. If it needs your computer to do something, the desktop side handles it
+6. The server wraps things up
+7. Dexter speaks or writes back
+
+A request can be: just an answer, a command run on your computer, a normal chat, or a quick shortcut for simple commands.
+
+---
+
+## How memory works
 
 ```
-Raw stream evidence  ──compress──►  Short-term live context   (in-stream)
-                     ──digest───►   Memory / highlights        (post-stream)
-                     ──learn────►   Streamer + community       (long-term profiles)
-                                    profile facts
+Everything that happens   ──shorten──►   Live notes during the stream
+on the stream             ──summarize─►   Highlights after the stream
+                          ──learn────►   Long-term notes about the
+                                          streamer and their viewers
 ```
 
-Live layer never reasons over raw history — it gets **structured**, pre-selected context.
+When Dexter is talking to you, it doesn't dig through everything that ever happened. It gets a clean, ready-made summary so it can respond fast.
 
 ---
 
-## Current product surface (MVP)
+## What Dexter can do today
 
-Voice/text copilot · OBS + desktop actions · Twitch controls + moderation · giveaways / timers / polls · templates · Telegram posting · web actions · music / player · per-stream + channel analytics · short-term live context · long-term memory · streamer + community profile learning.
-
----
-
-## What the team is focused on now
-
-Less new features. More:
-
-- Cleaning up architecture
-- Simplifying weak / messy flows
-- **Reliability and "execution truth"**
-- Reducing bugs and latency
-- Preparing for many concurrent users
-- **Reviewing the voice stack** — fast realtime model is great UX but expensive; custom STT → LLM → TTS would be cheaper but quality parity is hard
+Talk and listen · control OBS and your desktop · manage Twitch and moderation · run giveaways, timers, polls · save reusable shortcuts · post to Telegram · open and use the web · control music · show stream and channel stats · keep live notes · remember things long-term · learn about the streamer and their community.
 
 ---
 
-## Where the system is heading
+## What the team is working on right now
 
-A **broader creator operating layer**, not a single-purpose assistant:
-- Stronger OBS / stream-setup help
-- Richer Twitch-native management
-- Better surfaced analytics
-- Stronger memory- and profile-driven personalization
-- More creator guidance / recommendations
-- More **proactive** copilot behavior
-- General agent capabilities — notes, scheduling, integrations, **deeper desktop / web workflows**
-- More engagement features, widgets, overlays
+Less new features. More making what's there solid:
+
+- Cleaning up the code
+- Fixing messy or fragile parts
+- **Making sure things actually happen when Dexter says they did**
+- Making it faster and less buggy
+- Making it ready for lots of users at the same time
+- **Rethinking the voice setup** — the current one feels great but is expensive; building their own version would save money but might feel worse
 
 ---
 
-## My read — strengths & open risks
+## Where it's heading
+
+A **broader assistant for creators**, not just one tool:
+
+- Better OBS and stream-setup help
+- More Twitch features built in
+- Better stats shown to the user
+- More personal, memory-aware responses
+- More advice and recommendations
+- Dexter speaking up on its own when useful, not just when asked
+- General assistant features — notes, scheduling, integrations, **automations across apps**
+- More on-screen widgets and viewer-engagement features
+
+---
+
+## My take — what's strong, what's risky
 
 **Strengths**
-- Strong architectural separation (six clean layers).
-- The memory hierarchy is the right shape — structured beats raw retrieval.
-- Mixing fast / deterministic and reasoning paths is the right instinct.
+- The system is split into clean layers, which makes it easier to change things without breaking everything else.
+- The way memory is organised is the right shape — neat summaries beat raw search.
+- Mixing fast simple paths and slower thinking paths is the right instinct.
 
-**Risks worth discussing**
-- **Execution truth** across Electron + backend + 4 external APIs is the silent killer in agent products.
-- **Voice stack cost vs UX** — likely needs hybrid routing, not a single-vendor swap.
-- **Multi-tenant scale** — every user is a long-lived stateful session (Electron ↔ backend), which is harder than stateless web traffic.
-- **Local execution security** — Electron + arbitrary desktop actions = high blast radius; needs strict capability model.
+**Risks worth talking about**
+- **Making sure things really happened.** Dexter touches your computer, a server, and four outside services. Any one of them can quietly fail. This is the silent killer in AI assistants.
+- **Voice cost vs. how it feels.** Probably needs a mix of approaches, not picking one or the other.
+- **Lots of users at once.** Every user keeps an open connection between their desktop and the server — that's harder to scale than a normal website.
+- **Security on the desktop side.** A program that can do anything on your computer needs careful limits on what it's actually allowed to do.

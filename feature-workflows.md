@@ -1,14 +1,14 @@
 # Feature Proposal — **Dexter Workflows**
 
-> Voice-triggered, parametric, cross-app automations. A general-purpose evolution of Dexter's existing **templates / reusable actions**.
+> Voice-triggered shortcuts that do many things across many apps in one go. A natural next step for Dexter's existing **templates / reusable actions**.
 
 ---
 
-## One-line pitch
+## The pitch in one line
 
 > *"Run my morning setup."* *"Send the usual Friday update about the Q2 launch."* *"Save this article for later and remind me Monday."*
 >
-> One sentence → many actions, across many apps, with the right parameters filled in by the LLM.
+> One sentence → many things happen, in many apps, with the right details filled in by the AI.
 
 ---
 
@@ -16,17 +16,17 @@
 
 | Reason | Detail |
 |---|---|
-| **It's already on the roadmap** | The pack lists *"additional general agent capabilities such as notes, scheduling, integrations, and deeper desktop/web workflows."* This is exactly that. |
-| **It generalizes an MVP feature** | "Templates / reusable actions" already exists. Workflows is the same idea, made parametric, voice-recordable, and cross-app. Low conceptual lift for users. |
-| **It reuses every layer Dexter has built** | Backend orchestration · local execution · integrations · memory · profiles · analytics. No new vertical — instead a horizontal that *multiplies* the value of everything underneath. |
-| **It moves Dexter beyond streaming** | A general copilot capability. Streamer use cases are a subset, not the limit. Important for the "broader creator operating layer" vision. |
-| **It compounds with proactive behavior later** | Once workflows are first-class, the copilot can *suggest* them ("you do this every Monday — want me to make it a workflow?"). |
+| **It's already on the roadmap** | The pack mentions *"general assistant features like notes, scheduling, integrations, and automations across apps."* This is exactly that. |
+| **It builds on something users already understand** | Templates already exist in Dexter. Workflows are the same idea — just smarter, voice-driven, and able to use more than one app at a time. |
+| **It uses everything Dexter has already built** | The brain, the desktop side, the integrations, memory, profiles, stats. It doesn't add a new vertical — it makes everything already built more useful. |
+| **It works for everyone, not just streamers** | Anyone using a computer can benefit. Streaming use cases become one example, not the whole feature. |
+| **It sets up future "Dexter speaks up on its own" features** | Once workflows exist, Dexter can suggest them: "you do this every Monday — want me to make a shortcut?" |
 
 ---
 
 ## What a Workflow is
 
-A **named, parametric DAG of actions** that Dexter can run on demand, on schedule, or on trigger.
+A **named shortcut that runs several steps** — on demand, on a schedule, or when something happens.
 
 ```
                   ┌──────────────┐
@@ -34,19 +34,20 @@ A **named, parametric DAG of actions** that Dexter can run on demand, on schedul
                   └──────┬───────┘
                          │
                   ┌──────▼───────┐
-                  │  Parameters  │   inferred from utterance, prompted if missing
+                  │   Details    │   pulled out of what you said,
+                  │              │   asked for if missing
                   └──────┬───────┘
                          │
         ┌────────────────┼────────────────┐
         │                │                │
    ┌────▼────┐      ┌────▼────┐      ┌────▼────┐
-   │ Step A  │      │ Step B  │      │ Step C  │   parallel where safe
-   │ (Telegram)│    │ (OBS)   │      │ (Web)   │
+   │ Step A  │      │ Step B  │      │ Step C  │   run together where safe
+   │(Telegram)│     │  (OBS)  │      │  (Web)  │
    └────┬────┘      └────┬────┘      └────┬────┘
         └────────────────┼────────────────┘
                          │
                   ┌──────▼───────┐
-                  │   Receipts   │   typed result, surfaced + logged
+                  │  Confirmation │   each step reports back
                   └──────────────┘
 ```
 
@@ -54,80 +55,81 @@ A **named, parametric DAG of actions** that Dexter can run on demand, on schedul
 
 ## Example workflows
 
-| Workflow | Triggered by | Steps |
+| Workflow | Triggered by | What it does |
 |---|---|---|
-| **Morning setup** | "good morning" / 9 AM | open Slack + calendar + email · post standup template to channel · enable focus mode · play playlist |
-| **Save & summarize** | "save this for later" | grab active tab URL · LLM summary · store in notes table · tag · optional Telegram self-message |
-| **Friday update** | "send the usual Friday update about <X>" | pull this week's notes · LLM compose from template · post to Telegram channel · log |
-| **Focus block** | "focus for 90 minutes" | mute notifications · set Slack status · start timer · play music · auto-restore on completion |
-| **End of day** | "wrap up" / 6 PM | close apps · post EOD summary · file open tabs to reading list · backup notes |
+| **Morning setup** | "good morning" / 9 AM | open Slack + calendar + email · post a standup message · turn on focus mode · play a playlist |
+| **Save & summarize** | "save this for later" | grab the open browser tab · ask the AI for a summary · store it in your notes · tag it · optionally Telegram it to yourself |
+| **Friday update** | "send the usual Friday update about <X>" | gather this week's notes · let the AI write the message · post to Telegram · log it |
+| **Focus block** | "focus for 90 minutes" | mute notifications · set Slack status · start a timer · play music · undo everything when done |
+| **End of day** | "wrap up" / 6 PM | close apps · post a summary · send open tabs to a reading list · back up your notes |
 
-Streaming use cases (pre-stream setup, post-stream wrap-up) become *one* category of workflow — not the whole feature.
+Streamer-specific shortcuts (pre-stream setup, post-stream wrap-up) become *one kind* of workflow — not the whole feature.
 
 ---
 
-## Architecture
+## How it fits into Dexter
 
-### How it slots into Dexter's existing layers
+### Slotting into the existing layers
 
 | Existing layer | What Workflows adds |
 |---|---|
-| Realtime voice | New intent: *"run workflow"* / *"create workflow from what I just did"* |
-| Frontend runtime | Workflow execution UI, status surface, parameter prompts |
-| Backend orchestration | New `workflows` module: definition CRUD, parameter inference, executor, scheduler |
-| Feature / domain modules | Each existing module exposes its actions to Workflows via a shared **Action Contract** |
-| Local execution | Same channel — workflows just call multiple local actions in sequence |
-| Persistent data | New tables: `workflows`, `workflow_runs`, `workflow_step_results` |
+| Voice layer | Recognises new commands like *"run my morning setup"* or *"make a workflow from what I just did"* |
+| Desktop app | A panel showing what's running, how it's going, and prompts for any missing details |
+| Server (the brain) | A new module that stores workflows, fills in details, runs them, and schedules them |
+| Feature modules | Each existing feature (Telegram post, OBS scene change, etc.) tells the workflow system "here's what I can do and what I need to know" |
+| Desktop side | Just runs steps one after another using the same channel that already exists |
+| Database | Three new tables: workflows, workflow runs, and step results |
 
-### The Action Contract (the linchpin)
+### The "Action Contract" — the key idea
 
-Every action — old or new — registers itself with a typed contract:
+Every action (old or new) describes itself in a standard way:
 
 ```ts
 {
   id: 'telegram.post',
   description: 'Post a message to a Telegram channel',
-  params: ZodSchema,                // for LLM to fill
-  execute: (params, ctx) => Receipt, // returns confirmation
-  idempotencyKey: (params) => string,
-  scopes: ['telegram:write'],
+  params: ZodSchema,                   // what details are needed
+  execute: (params, ctx) => Receipt,   // does the thing, reports back
+  idempotencyKey: (params) => string,  // so retrying doesn't double-post
+  scopes: ['telegram:write'],          // what permission it needs
 }
 ```
 
-This is also the right shape for **execution truth** — every step returns a receipt with `requested / attempted / confirmed / evidence`.
+This is also exactly what's needed for Dexter's "make sure it really happened" goal — every step has to come back with proof.
 
 ---
 
 ## Tech stack & packages
 
-### Reuse what's already there
-- **TypeScript / Node** backend, **React** frontend, **Electron** runtime, **Supabase / Postgres** storage.
-- Existing voice + orchestration paths.
+### What we already have and reuse
+- **TypeScript / Node** for the server, **React** for the screen, **Electron** for the desktop app, **Supabase / Postgres** for storage.
+- The voice layer and the brain that already routes requests.
 
-### New packages — chosen deliberately
+### New packages — picked on purpose, not by habit
 
-| Package | Use | Why this one |
+| Package | What it does | Why this one |
 |---|---|---|
-| **`zod`** | Schema validation for workflow definitions, action params, LLM structured output | Already idiomatic in Node/TS; one source of truth for runtime + types + LLM JSON schema |
-| **`xstate`** | Per-run execution state machine (pending → running → paused → done / failed / cancelled) | Pausable, resumable, observable runs. Visualizable. Pays for itself once retries + branching exist. *Skip in v1 if scope is tight.* |
-| **`bullmq`** (Redis) | Scheduled & async workflow runs, retries with backoff | Mature, observable, supports cron + delayed jobs + rate limits. Better than rolling our own. |
-| **`ioredis`** | BullMQ + cooldowns + per-user lock keys | Standard pairing with BullMQ |
-| **`pgvector`** (Supabase ext.) | Semantic workflow search ("find my workflow that posts to channels") | Free with Supabase, no new infra |
-| **`@anthropic-ai/sdk`** | Parameter inference + step composition (Haiku for cheap calls, Sonnet for harder ones) | Direct SDK > heavy frameworks for tight latency control |
-| **`pino`** | Structured logs | Fast, JSON, plays nicely with OTel |
-| **`@opentelemetry/*`** | Distributed traces across orchestrator → executor → local | Per-turn span tree is the *only* way to debug agent latency |
-| **`langfuse`** *(optional)* | LLM call traces, prompt versioning, eval | Worth it once parameter-inference quality matters |
-| **`@xyflow/react`** *(v2)* | Visual workflow editor for power users | Best-in-class node graph UI for React |
-| **`electron-store`** | Per-user local workflow cache + offline drafts | Standard for Electron; encrypted at rest option |
+| **`zod`** | Checks that the data going in and out of each step matches what's expected | One short definition gives us live checking, code types, and a description the AI can use to fill in details. Three jobs, one tool. |
+| **`xstate`** | Tracks where each running workflow is up to (waiting, running, paused, done, failed) | Easy to pause, resume, watch, and visualise. *Skip in the first version if we want to keep things simple.* |
+| **`bullmq`** (with Redis) | Runs workflows on a schedule or in the background, retries when things fail | Battle-tested. Has a dashboard. Saves us writing this ourselves. |
+| **`ioredis`** | The connection to Redis that BullMQ needs | Standard pairing — nothing fancy. |
+| **`pgvector`** (Supabase add-on) | Lets users find a workflow by describing it ("the one that posts to channels") | Free with Supabase. No new servers. |
+| **`@anthropic-ai/sdk`** | Talks to Claude for filling in details and writing messages | Going direct keeps things fast. Heavier frameworks add layers we don't need. |
+| **`pino`** | Writes logs in a structured way | Fast, readable, plays nicely with everything else. |
+| **`@opentelemetry/*`** | Lets us trace one user request across the whole system | The only realistic way to debug "why is this slow" or "where did this fail" in a system this spread out. |
+| **`langfuse`** *(optional)* | Records every AI call so we can review and improve them | Worth adding once the AI's quality matters in production. |
+| **`@xyflow/react`** *(later)* | A visual editor for power users to drag steps around | Best-looking, well-supported library for this. |
+| **`electron-store`** | Saves a copy of workflows on the user's machine for quick access and offline drafts | Standard for Electron apps. |
 
-### Explicitly **not** picked (and why)
-- **LangChain / LangGraph** — too much abstraction for the latency budget; we want explicit control over each tool call, not a framework's opinion.
-- **Temporal** — perfect for long-running workflows, but heavy infra for runs measured in seconds. Revisit if average run time exceeds minutes.
-- **A new message broker (NATS / Kafka)** — Redis + Postgres is enough at current scale. Don't add infra you can't justify with a metric.
+### What we're **not** using (and why)
+
+- **LangChain / LangGraph** — too much framework wrapping every AI call. We want fast, direct control.
+- **Temporal** — designed for workflows that run for hours or days. Ours run for seconds. Not worth the extra servers.
+- **A new message system like Kafka or NATS** — Redis and Postgres are enough for this scale. Don't add servers we can't justify with a real number.
 
 ---
 
-## Database shape (sketch)
+## What the database tables look like (rough sketch)
 
 ```sql
 workflows (
@@ -135,9 +137,9 @@ workflows (
   user_id uuid,
   name text,
   description text,
-  definition jsonb,         -- DAG of steps + params schema
-  embedding vector(1536),   -- semantic search
-  scopes text[],            -- capability allow-list
+  definition jsonb,         -- the steps and what details they need
+  embedding vector(1536),   -- for "find me the workflow that does X"
+  scopes text[],            -- what permissions it needs
   version int,
   created_at timestamptz
 );
@@ -146,8 +148,8 @@ workflow_runs (
   id uuid pk,
   workflow_id uuid,
   user_id uuid,
-  trigger jsonb,            -- voice utterance / schedule / event
-  resolved_params jsonb,
+  trigger jsonb,            -- voice command / schedule / event
+  resolved_params jsonb,    -- the details, once filled in
   status text,              -- pending / running / done / failed / cancelled
   started_at timestamptz,
   finished_at timestamptz
@@ -157,7 +159,7 @@ workflow_step_results (
   run_id uuid,
   step_id text,
   attempt int,
-  receipt jsonb,            -- requested / attempted / confirmed / evidence
+  receipt jsonb,            -- what was tried, did it work, proof
   duration_ms int,
   primary key (run_id, step_id, attempt)
 );
@@ -165,33 +167,33 @@ workflow_step_results (
 
 ---
 
-## Phased rollout
+## Rolling it out in stages
 
-| Phase | Scope | Goal |
+| Stage | What's in it | Goal |
 |---|---|---|
-| **v0 — Internal** | Action Contract refactor of 3-5 existing actions; manual JSON workflow definitions; voice trigger only; sequential execution | Prove the contract; dogfood internally |
-| **v1 — General release** | Library of starter workflows; voice "create workflow from what I just did"; LLM parameter inference; receipts surfaced in UI | First user-facing release |
-| **v2 — Power features** | Visual editor, scheduling, conditional branches, parallel steps, sharing/marketplace | Make it sticky |
-| **v3 — Proactive** | Dexter detects repeated action sequences and *suggests* turning them into workflows | Closes the loop with proactive copilot direction |
+| **v0 — Internal** | Update 3–5 existing actions to the new contract; workflows written by hand in JSON; voice trigger only; steps run one after another | Prove the idea works. Use it ourselves. |
+| **v1 — Public release** | A library of starter workflows; "make a workflow from what I just did"; AI fills in details; user sees what worked and what didn't | First version users actually get. |
+| **v2 — Power features** | Visual editor, scheduling, "if this then that" branches, steps in parallel, sharing between users | Make it sticky. |
+| **v3 — Proactive** | Dexter notices you doing the same things repeatedly and offers to turn them into a workflow | Connects to the bigger "Dexter speaks up" direction. |
 
 ---
 
-## Tradeoffs & judgment calls
+## The judgment calls I'd make
 
-- **Imperative vs declarative definitions.** Declarative (JSON DAG) is shareable, versionable, sandboxable. Imperative (TS function) is more flexible but a security and portability nightmare. → **Declarative.**
-- **Build the visual editor in v1?** No. Voice + JSON is enough for v1. Visual editor is the v2 stickiness lever.
-- **xstate or hand-rolled executor?** Hand-rolled in v0–v1. Promote to xstate when retry / pause / resume / branching demand it. Don't pay framework cost before you need it.
-- **One LLM call per step, or one per workflow?** One per workflow for parameter inference (cheap, fast). LLM should not be in the hot path of execution — actions run deterministically with pre-resolved params.
-- **Where do workflows execute — backend or local?** Step-by-step decision via the Action Contract's location hint. Same routing logic that already exists for single actions.
+- **Define workflows as data, not code.** Storing them as JSON makes them easy to share, version, and lock down. Letting users write code is more flexible but a security and maintenance headache. → **Go with data.**
+- **Visual editor in v1?** No. Voice and JSON are enough at first. The visual editor is a v2 feature once people care enough to hand-edit.
+- **Use xstate or write the runner ourselves?** Write it ourselves to start. Switch to xstate when retries, pausing, and branching demand it. Don't pay framework cost before we need it.
+- **AI per step or AI per workflow?** Once per workflow, to fill in the details up front. The AI should not be in the middle of execution — once we know the details, steps run predictably.
+- **Run on the server or on the user's machine?** Step by step — each action says where it should run. Same logic as today, just applied to a sequence.
 
 ---
 
 ## Risks & open questions
 
-1. **Trust budget.** A workflow that misfires is much worse than a single action that misfires. Need a clear preview / dry-run mode and per-workflow scopes.
-2. **Capability scoping.** Each workflow declares the scopes it needs. User approves once at creation, not per run. Revocable.
-3. **Idempotency across the DAG.** What if step 3 of 5 fails on retry? Need step-level idempotency keys, not just run-level.
-4. **Cancellation.** A turn-id / cancellation token must flow into every step so an interrupted user doesn't get stale actions landing 10s later.
-5. **Sharing / marketplace.** Big upside, big trust surface. Defer to v2 minimum, with mandatory scope review on import.
+1. **Trust.** A workflow that misfires is much worse than one wrong click. Need a "show me what would happen first" mode.
+2. **Permissions.** Each workflow says upfront what it can touch (Telegram, OBS, etc.). User approves once when they create it. Can take it back.
+3. **Retrying without doing it twice.** If step 3 of 5 fails and we retry, we can't post to Telegram twice. Each step needs a unique key so we know what's already done.
+4. **Cancelling cleanly.** If the user interrupts mid-workflow, every step needs to know to stop — no stale actions landing 10 seconds later.
+5. **Sharing workflows.** Big upside, big trust risk. Push to v2 minimum, with mandatory permission review when someone imports a workflow.
 
 ---
